@@ -64,27 +64,37 @@ class CheckSite:
 
         self.configure_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.configure_window.set_position(gtk.WIN_POS_CENTER)
+        self.configure_window.set_title("SiteMon Configuration")
 
         self.notebook = gtk.Notebook()
 
-        page1 = gtk.Label('This is the first page')
-        page2 = gtk.Label('This is the second page')
-        self.notebook.append_page(page1, gtk.Label('P1'))
-        self.notebook.append_page(page2, gtk.Label('P2'))
-        self.notebook.props.border_width = 12
-        self.notebook.set_tab_reorderable(page1, True)
-        self.notebook.set_tab_reorderable(page2, True)
+        csections = self.config.sections()
 
 
+        for site in csections:
+            page = gtk.Label(self.config.get(site, 'url'))
+            self.notebook.append_page(page, gtk.Label(site))    
+            self.notebook.set_tab_reorderable(page, True)
 
+        self.notebook.props.border_width = 10
+
+
+        fixed = gtk.Fixed()
+
+        
         self.button_save = gtk.Button("Save")
         #self.button_save.connect("clicked", self.destroy)
 
         self.button_cancel = gtk.Button("Cancel")
         #self.button_cancel.connect("clicked", self.destroy)
 
+        fixed.put(self.button_save, 20, 100)
+        fixed.put(self.button_cancel, 80, 100)
+        fixed.put(self.notebook, 10, 10)
 
-        self.configure_window.show()
+        self.configure_window.add(fixed)
+
+        self.configure_window.show_all()
 
     def check_alive(self, site):
         """ Check if a site or page is alive """
@@ -112,7 +122,7 @@ class CheckSite:
 
                 print "checking " + site
 
-                site_status = self.check_alive(site)
+                site_status = self.check_alive(self.config.get(site, 'url'))
 
                 if site_status['alive']:
                     self.ind.set_status(appindicator.STATUS_ACTIVE)
